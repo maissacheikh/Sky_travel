@@ -128,3 +128,12 @@ on_treeview1_selection_received        (GtkWidget       *widget,
 void
 on_enr_mod_vol_clicked                 (GtkButton       *button,
                                         gpointer         user_data);
+
+void
+on_rech_vol_clicked                    (GtkButton       *button,
+                                        gpointer         user_data);
+
+void
+on_combobox1_add                       (GtkContainer    *container,
+                                        GtkWidget       *widget,
+                                        gpointer         user_data);

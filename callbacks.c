@@ -8,7 +8,7 @@
 #include "interface.h"
 #include "support.h"
 #include "vol.h"
-#include "editable.h"
+
 
 
 void on_recherche_clicked (GtkButton *objet,gpointer user_data)
@@ -17,10 +17,25 @@ GtkWidget *ajoutvol;
 GtkWidget *res_rech_vol;
 GtkWidget *treeview1;
 GtkWidget *RechercheVol;
+GtkWidget *combobox1,*combobox2,*jourd,*jourr,*moisd,*moisr,*anneed,*anneer,*sortie;
 
 RechercheVol=lookup_widget(objet,"RechercheVol");
-
-
+combobox1=lookup_widget(objet,"combobox1");
+combobox2=lookup_widget(objet,"combobox2");
+jourd=lookup_widget(objet,"j_d_depart");
+moisd=lookup_widget(objet,"m_d_depart");
+anneed=lookup_widget(objet,"a_d_depart");
+jourr=lookup_widget(objet,"j_d_retour");
+moisr=lookup_widget(objet,"m_d_retour");
+anneer=lookup_widget(objet,"a_d_retour");
+sortie=lookup_widget(objet,"mess_rech");
+if (gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneed))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneer)))
+gtk_label_set_text(GTK_LABEL(sortie),"Date erroné");
+else if ((gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(moisd))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(moisr)))&&(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneed))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneer))))
+gtk_label_set_text(GTK_LABEL(sortie),"Date erroné");
+else if ((gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jourd))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jourr)))&&((gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(moisd))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(moisr)))&&(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneed))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneer)))))
+gtk_label_set_text(GTK_LABEL(sortie),"Date erroné");
+else{
 gtk_widget_destroy(RechercheVol);
 res_rech_vol=lookup_widget(objet,"res_rech_vol");
 res_rech_vol=create_res_rech_vol();
@@ -30,7 +45,7 @@ gtk_widget_show(res_rech_vol);
 treeview1=lookup_widget(res_rech_vol,"treeview1");
 
 afficher_vol(treeview1);
-
+}
 }
 
 
@@ -364,4 +379,59 @@ gtk_widget_show(res_rech_vol);
 treeview1=lookup_widget(res_rech_vol,"treeview1");
 afficher_vol(treeview1);
 }
+
+
+void
+on_rech_vol_clicked                    (GtkButton       *objet,
+                                        gpointer         user_data)
+{GtkWidget *menu_X,*RechercheVol;
+GtkWidget *combobox1,*combobox2;
+FILE *f=fopen("vol.txt","r"),*d=fopen("depart.txt","w+"),*r=fopen("retour.txt","w+");
+vol v;
+int i,j,k,nbr,n=0,x;
+char villed[50][10];
+char viller[50][10];
+menu_X=lookup_widget(objet,"menu_X");
+gtk_widget_destroy(menu_X);
+RechercheVol=lookup_widget(objet,"RechercheVol");
+RechercheVol=create_RechercheVol();
+gtk_widget_show(RechercheVol);
+combobox1=lookup_widget(RechercheVol,"combobox1");
+combobox2=lookup_widget(RechercheVol,"combobox2");
+if (f!=NULL)
+while (fscanf(f,"%d %s %s %s %d/%d/%d %d/%d/%d\n",&v.id,v.nom,v.depart,v.retour,&v.d_depart.j,&
+v.d_depart.m,&v.d_depart.a,&v.d_retour.j,&v.d_retour.m,&v.d_retour.a)!=EOF)
+{
+strcpy(villed[n],v.depart);
+fprintf(d,"%s\n",villed[n]);
+strcpy(viller[n],v.retour);
+gtk_combo_box_append_text(GTK_COMBO_BOX(combobox1),_(villed[n]));
+gtk_combo_box_append_text(GTK_COMBO_BOX(combobox2),_(viller[n]));
+fprintf(r,"%s\n",viller[n]);
+n++;}
+nbr=n;
+d=fopen("depart.txt","w+");
+r=fopen("retour.txt","w+");
+
+
+fclose(d);
+fclose(r);
+fclose(f);
+}
+/*while(fscanf(d,"%s\n",villed[i])!=EOF)
+{for (i=0;i<n;i++){+q+d
+for (j=i+1;j<n;j++){
+if (strcmp(villed[j],villed[i])==0){
+for(k=j;k<n;k++){
+strcpy(villed[k],villed[k+1]);
+fprintf(d,"%s\n",villed[k]);}
+n--;}else j++;}}}
+for(i=0;i<n;i++)
+while(fscanf(r,"%s\n",viller[i])!=EOF)
+{for (i=0;i<nbr;i++){
+for (j=i+1;j<nbr;j++){
+if (strcmp(villed[j],villed[i])==0){
+for(k=j;k<nbr;k++){
+strcpy(villed[k],villed[k+1]);}
+nbr--;}else j++;}*/
 

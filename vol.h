@@ -51,3 +51,4 @@ void afficher_vol(GtkWidget *liste);
 void delete_vol(int test,vol v);
 int verif(int a,vol v);
 void modifier_vol(vol v,int a);
+
