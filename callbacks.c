@@ -3,435 +3,317 @@
 #endif
 
 #include <gtk/gtk.h>
-#include <string.h>
 #include "callbacks.h"
 #include "interface.h"
+#include <string.h>
 #include "support.h"
-#include "vol.h"
-
-
-
-void on_recherche_clicked (GtkButton *objet,gpointer user_data)
-{
-GtkWidget *ajoutvol;
-GtkWidget *res_rech_vol;
-GtkWidget *treeview1;
-GtkWidget *RechercheVol;
-GtkWidget *combobox1,*combobox2,*jourd,*jourr,*moisd,*moisr,*anneed,*anneer,*sortie;
-
-RechercheVol=lookup_widget(objet,"RechercheVol");
-combobox1=lookup_widget(objet,"combobox1");
-combobox2=lookup_widget(objet,"combobox2");
-jourd=lookup_widget(objet,"j_d_depart");
-moisd=lookup_widget(objet,"m_d_depart");
-anneed=lookup_widget(objet,"a_d_depart");
-jourr=lookup_widget(objet,"j_d_retour");
-moisr=lookup_widget(objet,"m_d_retour");
-anneer=lookup_widget(objet,"a_d_retour");
-sortie=lookup_widget(objet,"mess_rech");
-if (gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneed))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneer)))
-gtk_label_set_text(GTK_LABEL(sortie),"Date erroné");
-else if ((gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(moisd))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(moisr)))&&(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneed))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneer))))
-gtk_label_set_text(GTK_LABEL(sortie),"Date erroné");
-else if ((gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jourd))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jourr)))&&((gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(moisd))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(moisr)))&&(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneed))>gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(anneer)))))
-gtk_label_set_text(GTK_LABEL(sortie),"Date erroné");
-else{
-gtk_widget_destroy(RechercheVol);
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-res_rech_vol=create_res_rech_vol();
-
-gtk_widget_show(res_rech_vol);
-
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-
-afficher_vol(treeview1);
-}
-}
+#include "authentification.h"
+#include "adherent.h"
+#include <stdlib.h>
 
 
 void
-on_retour_clicked                      (GtkButton       *button,
+on_buttonsignin_clicked                (GtkButton       *objet_graphique,
                                         gpointer         user_data)
 {
-gtk_main_quit();
+GtkWidget *input1,*input2,*output;
+GtkWidget *nomcompte;
+GtkWidget *fenetreadherent;GtkWidget *authentification,*fenetreadmin,*fenetreagent;
+Adherent ad;
+char use[20];char pwd[20];int x;
+input1=lookup_widget(objet_graphique,"entryusername");
+input2=lookup_widget(objet_graphique,"entrypassword");
+strcpy(use,gtk_entry_get_text(GTK_ENTRY(input1)));
+strcpy(pwd,gtk_entry_get_text(GTK_ENTRY(input2)));
+x=verifier(use,pwd);
+
+switch (x)
+{
+case (1):{
+	authentification=lookup_widget(objet_graphique,"authentification");
+	gtk_widget_destroy(authentification);
+	fenetreadmin=lookup_widget(objet_graphique,"fenetreadmin");
+	fenetreadmin=create_fenetreadmin();
+	gtk_widget_show(fenetreadmin);
+	break;}
+
+case (2):{
+	authentification=lookup_widget(objet_graphique,"authentification");
+	gtk_widget_destroy(authentification);
+	fenetreagent=lookup_widget(objet_graphique,"fenetreagent");
+	fenetreagent=create_fenetreadmin();
+	gtk_widget_show(fenetreagent);
+	break ;}
+
+case (3):{		
+	authentification=lookup_widget(objet_graphique,"authentification");
+	gtk_widget_destroy(authentification);
+	fenetreadherent=lookup_widget(objet_graphique,"fenetreadherent");
+	fenetreadherent=create_fenetreadherent();
+	gtk_widget_show(fenetreadherent);
+	enregistrerusername(use);
+	nomcompte=lookup_widget(fenetreadherent,"label15");
+	gtk_entry_set_text(GTK_ENTRY(nomcompte),use);
+	break;}
+
+}
 }
 
 
 void
-on_ajouter_vol_clicked                 (GtkButton       *objet,
+on_buttoncontinuervisiteur_clicked     (GtkButton       *button,
                                         gpointer         user_data)
 {
-vol v;
-GtkWidget *input1, *input2, *input3,*Jour,*Mois,*Annee,*jour,*mois,*annee;
-GtkWidget *ajoutvol,*res_rech_vol,*treeview1;
-
-ajoutvol=lookup_widget(objet,"ajoutvol");
-
-input1=lookup_widget(objet,"nom");
-input2=lookup_widget(objet,"depart");
-input3=lookup_widget(objet,"retour");
-Jour=lookup_widget(objet,"j_d_depart");
-Mois=lookup_widget(objet,"m_d_depart");
-Annee=lookup_widget(objet,"a_d_depart");
-jour=lookup_widget(objet,"j_d_retour");
-mois=lookup_widget(objet,"m_d_retour");
-annee=lookup_widget(objet,"a_d_retour");
-strcpy(v.nom,gtk_entry_get_text(GTK_ENTRY(input1)));
-strcpy(v.depart,gtk_entry_get_text(GTK_ENTRY(input2)));
-strcpy(v.retour,gtk_entry_get_text(GTK_ENTRY(input3)));
-v.d_depart.j=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Jour));
-v.d_depart.m=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Mois));
-v.d_depart.a=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Annee));
-v.d_retour.j=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(jour));
-v.d_retour.m=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(mois));
-v.d_retour.a=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(annee));
-
-ajouter_vol(v);
-ajoutvol=lookup_widget(objet,"ajoutvol");
-
-gtk_widget_destroy(ajoutvol);
-
-res_rech_vol=create_res_rech_vol();
-gtk_widget_show(res_rech_vol);
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-
-afficher_vol(treeview1);
 }
 
 
 void
-on_retourajout_clicked                 (GtkButton       *objet,
+on_buttoncreercompte_clicked           (GtkButton       *button,
                                         gpointer         user_data)
+{GtkWidget *authentification,*creeruncompte;
+authentification=lookup_widget(button,"authentification");
+	gtk_widget_destroy(authentification);
+	creeruncompte=lookup_widget(button,"creeruncompte");
+	creeruncompte=create_creeruncompte();
+	gtk_widget_show(creeruncompte);
+}
+
+
+
+void
+on_buttonconfirmer_clicked             (GtkButton       *button,
+                                        gpointer         user_data)
+
+{Adherent ad;
+int jour,mois,annee,t;char login[20];
+GtkWidget *msg,*input1,*input2,*input3,*input4,*input5,*input6,*input7,*input8,*input9,*input10,*input11,*creeruncompte,*authentification;
+creeruncompte=lookup_widget(button,"creeruncompte");
+input1=lookup_widget(button,"entrynom");
+input2=lookup_widget(button,"entryprenom");
+input3=lookup_widget(button,"entrycin");
+input4=lookup_widget(button,"entrymail");
+input5=lookup_widget(button,"entryadresse");
+input6=lookup_widget(button,"entrynum");
+input7=lookup_widget(button,"spinbuttonjour");
+input8=lookup_widget(button,"spinbuttonmois");
+input9=lookup_widget(button,"spinbuttonannee");
+input10=lookup_widget(button,"entryuse");
+input11=lookup_widget(button,"entrypwd");
+if(verifier_adherent(gtk_entry_get_text(GTK_ENTRY(input10)))==0)
+{strcpy(ad.nom,gtk_entry_get_text(GTK_ENTRY(input1)));
+strcpy(ad.prenom,gtk_entry_get_text(GTK_ENTRY(input2)));
+ad.cin=atof(gtk_entry_get_text(GTK_ENTRY(input3)));
+strcpy(ad.adressemail,gtk_entry_get_text(GTK_ENTRY(input4)));
+strcpy(ad.adresse,gtk_entry_get_text(GTK_ENTRY(input5)));
+jour=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(input7));
+mois=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(input8));
+annee=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(input9));
+strcpy(ad.Username,gtk_entry_get_text(GTK_ENTRY(input10)));
+strcpy(ad.password,gtk_entry_get_text(GTK_ENTRY(input11)));
+ad.telephone=atof(gtk_entry_get_text(GTK_ENTRY(input6)));
+ad.datenaissance.j=jour;
+ad.datenaissance.m=mois;
+ad.datenaissance.a=annee;
+ajouter_adherent(ad);
+gtk_widget_destroy(creeruncompte);
+authentification=lookup_widget(button,"authentification");
+authentification=create_authentification();
+gtk_widget_show(authentification);}else
+{msg=lookup_widget(button,"msg_err");
+gtk_label_set_text(GTK_LABEL(msg),"Username non disponible");}
+
+}
+
+
+
+void
+on_buttondeconnecter_clicked           (GtkButton       *button,
+                                        gpointer         user_data)
+{GtkWidget *authentification, *fenetreadmin;
+fenetreadmin=lookup_widget(button,"fenetreadmin");
+gtk_widget_destroy(fenetreadmin);
+authentification=lookup_widget(button,"authentification");
+authentification=create_authentification();
+gtk_widget_show(authentification);
+
+}
+
+
+void
+on_buttondeconnecteradherent_clicked   (GtkButton       *button,
+                                        gpointer         user_data)
+{GtkWidget *authentification, *fenetreadherent;
+fenetreadherent=lookup_widget(button,"fenetreadherent");
+gtk_widget_destroy(fenetreadherent);
+authentification=lookup_widget(button,"authentification");
+authentification=create_authentification();
+gtk_widget_show(authentification);
+
+}
+
+
+void
+on_buttondeconnecteradmin_clicked      (GtkButton       *button,
+                                        gpointer         user_data)
+{GtkWidget *authentification, *fenetreadmin;
+fenetreadmin=lookup_widget(button,"fenetreadmin");
+gtk_widget_destroy(fenetreadmin);
+authentification=lookup_widget(button,"authentification");
+authentification=create_authentification();
+gtk_widget_show(authentification);
+
+}
+
+
+void
+on_buttonretour_clicked                (GtkButton       *button,
+                                        gpointer         user_data)
+{GtkWidget *authentification, *creeruncompte;
+creeruncompte=lookup_widget(button,"creeruncompte");
+gtk_widget_destroy(creeruncompte);
+authentification=lookup_widget(button,"authentification");
+authentification=create_authentification();
+gtk_widget_show(authentification);
+
+}
+
+
+void
+on_buttoncompteagent_clicked           (GtkButton       *button,
+                                        gpointer         user_data)
+{GtkWidget *fenetreagent,*parametrescompte;
+fenetreagent=lookup_widget(button,"fenetreagent");
+	gtk_widget_destroy(fenetreagent);
+	parametrescompte=lookup_widget(button,"parametrescompte");
+	parametrescompte=create_parametrescompte();
+	gtk_widget_show(parametrescompte);
+
+}
+
+
+void
+on_buttoncompteadherent_clicked        (GtkButton       *objet,
+                                        gpointer         user_data)
+{GtkWidget *fenetreadherent,*parametrescompte,*input1,*user,*nom,*prenom,*cin,*mail,*adresse,*num,*jour,*mois,*annee,*use,*pwd;
+FILE *f,*h;
+Adherent ad;
+char cinaux[20];
+char telaux[20];
+char username[20];
+
+	fenetreadherent=lookup_widget(objet,"fenetreadherent");
+	gtk_widget_destroy(fenetreadherent);
+	parametrescompte=lookup_widget(objet,"parametrescompte");
+	parametrescompte=create_parametrescompte();
+	gtk_widget_show(parametrescompte);
+
+f=fopen("adherent.txt","r");
+h=fopen("username.txt","r");	
+nom=lookup_widget(parametrescompte,"entrynommodif");
+prenom=lookup_widget(parametrescompte,"entryprenommodif");
+cin=lookup_widget(parametrescompte,"entrycinmodif");
+mail=lookup_widget(parametrescompte,"entrymailmodif");
+adresse=lookup_widget(parametrescompte,"entryadressemodif");
+num=lookup_widget(parametrescompte,"entrynummodif");
+jour=lookup_widget(parametrescompte,"spinbuttonjourmodif");
+mois=lookup_widget(parametrescompte,"spinbuttonmoismodif");
+annee=lookup_widget(parametrescompte,"spinbuttonanneemodif");
+use=lookup_widget(parametrescompte,"entryusermodif");
+pwd=lookup_widget(parametrescompte,"entrypassmodif");
+while (fscanf(h,"%s",username)!=EOF)
+{while (fscanf(f,"%d %s %s %d %s %s %d %d/%d/%d %s %s\n",&ad.id,ad.nom,ad.prenom,&ad.cin,ad.adressemail,ad.adresse,&ad.telephone,&ad.datenaissance.j,&ad.datenaissance.m,&ad.datenaissance.a,ad.Username,ad.password)!=EOF) 
+if (strcmp(ad.Username,username)==0)
 {
-GtkWidget *res_rech_vol, *ajoutvol,*treeview1;
+gtk_entry_set_text(GTK_ENTRY(nom),ad.nom);
+gtk_entry_set_text(GTK_ENTRY(prenom),ad.prenom);
+sprintf(cinaux,"%d",ad.cin);
+gtk_entry_set_text(GTK_ENTRY(cin),cinaux);
+gtk_entry_set_text(GTK_ENTRY(mail),ad.adressemail);
+gtk_entry_set_text(GTK_ENTRY(adresse),ad.adresse);
+sprintf(telaux,"%d",ad.telephone);
+gtk_entry_set_text(GTK_ENTRY(num),telaux);
+gtk_spin_button_set_value(GTK_SPIN_BUTTON(jour),ad.datenaissance.j);
+gtk_spin_button_set_value(GTK_SPIN_BUTTON(mois),ad.datenaissance.m);
+gtk_spin_button_set_value(GTK_SPIN_BUTTON(annee),ad.datenaissance.a);
+gtk_entry_set_text(GTK_ENTRY(use),ad.Username);
+gtk_entry_set_text(GTK_ENTRY(pwd),ad.password);
 
-ajoutvol=lookup_widget(objet,"ajoutvol");
 
-gtk_widget_destroy(ajoutvol);
-
-res_rech_vol=create_res_rech_vol();
-gtk_widget_show(res_rech_vol);
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-
-afficher_vol(treeview1);
-}
-
-
-void
-on_ajouter_clicked                     (GtkButton       *objet,
-                                        gpointer         user_data)
-{
-GtkWidget *res_rech_vol, *ajoutvol;
-
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-
-gtk_widget_destroy(res_rech_vol);
-ajoutvol=create_ajoutvol();
-gtk_widget_show(ajoutvol);
-
-}
-
-
-void
-on_retour2_clicked                     (GtkButton       *objet,
-                                        gpointer         user_data)
-{
-GtkWidget *ajoutvol;
-GtkWidget *res_rech_vol;
-GtkWidget *treeview1;
-GtkWidget *RechercheVol;
-
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-
-
-gtk_widget_destroy(res_rech_vol);
-RechercheVol=lookup_widget(objet,"RechercheVol");
-RechercheVol=create_RechercheVol();
-
-gtk_widget_show(RechercheVol);
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-
-afficher_vol(treeview1);
-}
-
-
-void
-on_delete_vol_clicked                  (GtkButton       *objet,
-                                        gpointer         user_data)
-{
-GtkWidget *res_rech_vol;
-GtkWidget *del_vol;
-
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-
-
-gtk_widget_destroy(res_rech_vol);
-del_vol=lookup_widget(objet,"del_vol");
-del_vol=create_del_vol();
-
-gtk_widget_show(del_vol);
-}
-
-
-void
-on_mod_vol_clicked                     (GtkButton       *objet,
-                                        gpointer         user_data)
-{ 
-GtkWidget *mod_vol_choix;
-GtkWidget *res_rech_vol;
-
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-
-
-gtk_widget_destroy(res_rech_vol);
-mod_vol_choix=lookup_widget(objet,"mod_vol_choix");
-mod_vol_choix=create_mod_vol_choix();
-
-gtk_widget_show(mod_vol_choix);
-}
-
-
-void
-on_retour_mod_vol_clicked              (GtkButton       *objet,
-                                        gpointer         user_data)
-{
-GtkWidget *mod_vol;
-GtkWidget *res_rech_vol,*treeview1;
-
-mod_vol=lookup_widget(objet,"mod_vol");
-
-
-gtk_widget_destroy(mod_vol);
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-res_rech_vol=create_res_rech_vol();
-
-gtk_widget_show(res_rech_vol);
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-
-afficher_vol(treeview1);
-}
-
-
-
-
-
-
-void
-on_vol_del_ok_clicked                  (GtkButton       *objet,
-                                        gpointer         user_data)
-{
-GtkWidget *input;
-GtkWidget *del_vol;
-GtkWidget *res_rech_vol,*treeview1;
-vol v;
-int test;
-input=lookup_widget(objet,"vol_del");
-test=atof(gtk_entry_get_text(GTK_ENTRY(input)));
-delete_vol(test,v);
-del_vol=lookup_widget(objet,"del_vol");
-
-
-gtk_widget_destroy(del_vol);
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-res_rech_vol=create_res_rech_vol();
-
-gtk_widget_show(res_rech_vol);
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-
-afficher_vol(treeview1);
-}
-
-
-void
-on_retour_supp_vol_clicked             (GtkButton       *objet,
-                                        gpointer         user_data)
-{
-GtkWidget *del_vol;
-GtkWidget *res_rech_vol,*treeview1;
-
-del_vol=lookup_widget(objet,"del_vol");
-
-
-gtk_widget_destroy(del_vol);
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-res_rech_vol=create_res_rech_vol();
-
-gtk_widget_show(res_rech_vol);
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-
-afficher_vol(treeview1);
-}
-
-
-
-
-void
-on_valider_choix_mod_clicked           (GtkButton       *objet,
-                                        gpointer         user_data)
-{
-GtkWidget *input;
-GtkWidget *mod_vol_choix;
-GtkWidget *mod_vol,*nom,*depart,*retour,*dj,*dm,*da,*rj,*rm,*ra,*ID;
-vol v;
-int x;
-FILE *f;
-char id[5];
-
-input=lookup_widget(objet,"entry_choix_mod_vol");
-x=atof(gtk_entry_get_text(GTK_ENTRY(input)));
-if ((verif(x,v)))
-{mod_vol_choix=lookup_widget(objet,"mod_vol_choix");
-gtk_widget_destroy(mod_vol_choix);
-mod_vol=lookup_widget(objet,"mod_vol");
-mod_vol=create_mod_vol();
-gtk_widget_show(mod_vol);
-f=fopen("vol.txt","r");
-ID=lookup_widget(mod_vol,"ID_fix");
-nom=lookup_widget(mod_vol,"entrynom_mod");
-depart=lookup_widget(mod_vol,"entrydepart_mod");
-retour=lookup_widget(mod_vol,"entryretour_mod");
-dj=lookup_widget(mod_vol,"j_d_depart");
-dm=lookup_widget(mod_vol,"m_d_depart");
-da=lookup_widget(mod_vol,"a_d_depart");
-rj=lookup_widget(mod_vol,"j_d_retour");
-rm=lookup_widget(mod_vol,"m_d_retour");
-ra=lookup_widget(mod_vol,"a_d_retour");
-
-if(f!=NULL)
-{while (fscanf(f,"%d %s %s %s %d/%d/%d %d/%d/%d\n",&v.id,v.nom,v.depart,v.retour,&v.d_depart.j,&
-v.d_depart.m,&v.d_depart.a,&v.d_retour.j,&v.d_retour.m,&v.d_retour.a)!=EOF)
-{if(x==v.id)
-{sprintf(id,"%d",v.id);
-gtk_entry_set_text(GTK_ENTRY(ID),id);
-gtk_spin_button_set_value (GTK_SPIN_BUTTON(ID),v.id);
-gtk_entry_set_text(GTK_ENTRY(nom),v.nom);
-gtk_entry_set_text(GTK_ENTRY(depart),v.depart);
-gtk_entry_set_text(GTK_ENTRY(retour),v.retour);
-gtk_spin_button_set_value (GTK_SPIN_BUTTON(dj),v.d_depart.j);
-gtk_spin_button_set_value (GTK_SPIN_BUTTON(dm),v.d_depart.m);
-gtk_spin_button_set_value (GTK_SPIN_BUTTON(da),v.d_depart.a);
-gtk_spin_button_set_value (GTK_SPIN_BUTTON(rj),v.d_retour.j);
-gtk_spin_button_set_value (GTK_SPIN_BUTTON(rm),v.d_retour.m);
-gtk_spin_button_set_value (GTK_SPIN_BUTTON(ra),v.d_retour.a);
-}}}}fclose(f);
-}
-
-void
-on_retour_cmv_clicked                  (GtkButton       *objet,
-                                        gpointer         user_data)
-{
-GtkWidget *mod_vol_choix;
-GtkWidget *res_rech_vol,*treeview1;
-
-mod_vol_choix=lookup_widget(objet,"mod_vol_choix");
-
-
-gtk_widget_destroy(mod_vol_choix);
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-res_rech_vol=create_res_rech_vol();
-
-gtk_widget_show(res_rech_vol);
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-
-afficher_vol(treeview1);
-}
-
-void
-on_enr_mod_vol_clicked                 (GtkButton       *objet,
-                                        gpointer         user_data)
-{GtkWidget *input;
-GtkWidget *mod_vol_choix;
-GtkWidget *mod_vol,*nom,*depart,*retour,*dj,*dm,*da,*rj,*rm,*ra,*ID;
-GtkWidget *res_rech_vol,*treeview1;
-vol v;
-char id[5];
-FILE *f;
-ID=lookup_widget(objet,"ID_fix");
-nom=lookup_widget(objet,"entrynom_mod");
-depart=lookup_widget(objet,"entrydepart_mod");
-retour=lookup_widget(objet,"entryretour_mod");
-dj=lookup_widget(objet,"j_d_depart");
-dm=lookup_widget(objet,"m_d_depart");
-da=lookup_widget(objet,"a_d_depart");
-rj=lookup_widget(objet,"j_d_retour");
-rm=lookup_widget(objet,"m_d_retour");
-ra=lookup_widget(objet,"a_d_retour");
-strcpy(id,gtk_entry_get_text(GTK_ENTRY(ID)));
-v.id=atof(id);
-strcpy(v.nom,gtk_entry_get_text(GTK_ENTRY(nom)));
-strcpy(v.depart,gtk_entry_get_text(GTK_ENTRY(depart)));
-strcpy(v.retour,gtk_entry_get_text(GTK_ENTRY(retour)));
-v.d_depart.j=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(dj));
-v.d_depart.m=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(dm));
-v.d_depart.a=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(da));
-v.d_retour.j=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(rj));
-v.d_retour.m=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(rm));
-v.d_retour.a=gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(ra));
-delete_vol(atof(id),v);
-f=fopen("vol.txt","a+");
-fprintf(f,"%d %s %s %s %d/%d/%d %d/%d/%d",v.id,v.nom,v.depart,v.retour,v.d_depart.j,v.d_depart.m,v.d_depart.a,v.d_retour.j,v.d_retour.m,v.d_retour.a);
 fclose(f);
-mod_vol=lookup_widget(objet,"mod_vol");
-gtk_widget_destroy(mod_vol);
-res_rech_vol=lookup_widget(objet,"res_rech_vol");
-res_rech_vol=create_res_rech_vol();
-gtk_widget_show(res_rech_vol);
-treeview1=lookup_widget(res_rech_vol,"treeview1");
-afficher_vol(treeview1);
+fclose(h);}
+}}
+
+void
+on_buttoncompteadmin_clicked           (GtkButton       *button,
+                                        gpointer         user_data)
+{GtkWidget *fenetreadmin,*parametrescompte;
+fenetreadmin=lookup_widget(button,"fenetreadmin");
+	gtk_widget_destroy(fenetreadmin);
+	parametrescompte=lookup_widget(button,"parametrescompte");
+	parametrescompte=create_parametrescompte();
+	gtk_widget_show(parametrescompte);
+
+
 }
 
 
 void
-on_rech_vol_clicked                    (GtkButton       *objet,
+on_buttonconfirmermodif_clicked        (GtkButton       *button,
                                         gpointer         user_data)
-{GtkWidget *menu_X,*RechercheVol;
-GtkWidget *combobox1,*combobox2;
-FILE *f=fopen("vol.txt","r"),*d=fopen("depart.txt","w+"),*r=fopen("retour.txt","w+");
-vol v;
-int i,j,k,nbr,n=0,x;
-char villed[50][10];
-char viller[50][10];
-menu_X=lookup_widget(objet,"menu_X");
-gtk_widget_destroy(menu_X);
-RechercheVol=lookup_widget(objet,"RechercheVol");
-RechercheVol=create_RechercheVol();
-gtk_widget_show(RechercheVol);
-combobox1=lookup_widget(RechercheVol,"combobox1");
-combobox2=lookup_widget(RechercheVol,"combobox2");
-if (f!=NULL)
-while (fscanf(f,"%d %s %s %s %d/%d/%d %d/%d/%d\n",&v.id,v.nom,v.depart,v.retour,&v.d_depart.j,&
-v.d_depart.m,&v.d_depart.a,&v.d_retour.j,&v.d_retour.m,&v.d_retour.a)!=EOF)
+{ GtkWidget *fenetreadherent,*parametrescompte,*use,*nomcompte,*input1;
+Adherent ad;
+char username[20];
+FILE *f=fopen("username.txt","r");
+
+parametrescompte=lookup_widget(button,"parametrescompte");
+	gtk_widget_destroy(parametrescompte);
+	fenetreadherent=lookup_widget(button,"fenetreadherent");
+	fenetreadherent=create_fenetreadherent();
+	gtk_widget_show(fenetreadherent);
+
+while(fscanf(f,"%s",username)!=EOF)
+{input1=lookup_widget(fenetreadherent,"label15");
+gtk_entry_set_text(GTK_ENTRY(input1),username);}
+}
+
+
+void
+on_buttonretourfenetreadherent_clicked (GtkButton       *button,
+                                        gpointer         user_data)
 {
-strcpy(villed[n],v.depart);
-fprintf(d,"%s\n",villed[n]);
-strcpy(viller[n],v.retour);
-gtk_combo_box_append_text(GTK_COMBO_BOX(combobox1),_(villed[n]));
-gtk_combo_box_append_text(GTK_COMBO_BOX(combobox2),_(viller[n]));
-fprintf(r,"%s\n",viller[n]);
-n++;}
-nbr=n;
-d=fopen("depart.txt","w+");
-r=fopen("retour.txt","w+");
-
-
-fclose(d);
-fclose(r);
+GtkWidget *fenetreadherent, *parametrescompte,*input1;
+Adherent ad;
+FILE *f=fopen("username.txt","r");
+char username[20];
+parametrescompte=lookup_widget(button,"parametrescompte");
+gtk_widget_destroy(parametrescompte);
+fenetreadherent=lookup_widget(button,"fenetreadherent");
+fenetreadherent=create_fenetreadherent();
+gtk_widget_show(fenetreadherent);
+while(fscanf(f,"%s",username)!=EOF)
+{input1=lookup_widget(fenetreadherent,"label15");
+gtk_entry_set_text(GTK_ENTRY(input1),username);}
 fclose(f);
 }
-/*while(fscanf(d,"%s\n",villed[i])!=EOF)
-{for (i=0;i<n;i++){+q+d
-for (j=i+1;j<n;j++){
-if (strcmp(villed[j],villed[i])==0){
-for(k=j;k<n;k++){
-strcpy(villed[k],villed[k+1]);
-fprintf(d,"%s\n",villed[k]);}
-n--;}else j++;}}}
-for(i=0;i<n;i++)
-while(fscanf(r,"%s\n",viller[i])!=EOF)
-{for (i=0;i<nbr;i++){
-for (j=i+1;j<nbr;j++){
-if (strcmp(villed[j],villed[i])==0){
-for(k=j;k<nbr;k++){
-strcpy(villed[k],villed[k+1]);}
-nbr--;}else j++;}*/
+
+
+void
+on_buttonsupp_clicked                  (GtkButton       *button,
+                                        gpointer         user_data)
+{
+GtkWidget *parametrescompte,*authentification;
+GtkWidget *input;
+Adherent ad;
+char username[20];
+FILE *f=fopen("username.txt","r");
+while(fscanf(f,"%s",username)!=EOF)
+supp_adherent(username,ad);
+
+parametrescompte=lookup_widget(button,"parametrescompte");
+gtk_widget_destroy(parametrescompte);
+authentification=lookup_widget(button,"authentification");
+authentification=create_authentification();
+gtk_widget_show(authentification);
+}
+
 
